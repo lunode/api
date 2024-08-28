@@ -21,7 +21,7 @@
 </head>
 
 <body>
-  <div class="pt-20">
+  <div class="pt-20 flex flex-col">
     <div class="flex justify-center">
       <div class="px-4 py-2">更多查询规则，查看 <a href="https://github.com/typicode/json-server" class="underline text-blue-500">json-server</a> 文档</div>
       <div class="px-4 py-2"> <a href="https://github.com/typicode/json-server" class="underline text-blue-500">{JSON} Placeholder
@@ -29,7 +29,7 @@
       </div>
 
     </div>
-    <div class="px-20 flex gap-x-10 mt-10">
+    <div class="px-20 flex gap-x-10 mt-10 mx-auto">
       <ul class="w-40 flex flex-col gap-y-2" id="api">
         <li class="px-4 py-2 border cursor-pointer" data-api="posts">/posts 100x</li>
         <li class="px-4 py-2 border cursor-pointer" data-api="comments">/comments 500x</li>
@@ -38,7 +38,7 @@
         <li class="px-4 py-2 border cursor-pointer" data-api="albums">/albums 100x</li>
         <li class="px-4 py-2 border cursor-pointer" data-api="photos">/photos 5000x</li>
       </ul>
-      <ul class="min-w-96 flex flex-col gap-y-2 max-w-2xl" id="list">
+      <ul class="w-[600px] flex flex-col gap-y-2" id="list">
       </ul>
     </div>
   </div>

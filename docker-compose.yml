@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    image: api
+    container_name: api
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    network_mode: "host"

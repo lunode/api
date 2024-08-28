@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #api li.active {
+      background-color: #cbd5e1;
+    }
+  </style>
+  <!-- CDN Provider https://github.com/fondoger/tailwindcss-cdn -->
+  <!-- offical cdn -->
+  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+  <!-- global cdn -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/tailwindcss-cdn@3.4.10/tailwindcss.js"></script> -->
+  <!-- for china cdn -->
+  <script src="https://registry.npmmirror.com/tailwindcss-cdn/3.4.10/files/tailwindcss.js" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+  <div class="pt-20">
+    <div class="flex justify-center">
+      <div class="px-4 py-2">更多查询规则，查看 <a href="https://github.com/typicode/json-server" class="underline text-blue-500">json-server</a> 文档</div>
+      <div class="px-4 py-2"> <a href="https://github.com/typicode/json-server" class="underline text-blue-500">{JSON} Placeholder
+        </a>
+      </div>
+
+    </div>
+    <div class="px-20 flex gap-x-10 mt-10">
+      <ul class="w-40 flex flex-col gap-y-2" id="api">
+        <li class="px-4 py-2 border cursor-pointer" data-api="posts">/posts 100x</li>
+        <li class="px-4 py-2 border cursor-pointer" data-api="comments">/comments 500x</li>
+        <li class="px-4 py-2 border cursor-pointer" data-api="users">/users 10x</li>
+        <li class="px-4 py-2 border cursor-pointer" data-api="todos">/todos 200x</li>
+        <li class="px-4 py-2 border cursor-pointer" data-api="albums">/albums 100x</li>
+        <li class="px-4 py-2 border cursor-pointer" data-api="photos">/photos 5000x</li>
+      </ul>
+      <ul class="min-w-96 flex flex-col gap-y-2 max-w-2xl" id="list">
+      </ul>
+    </div>
+  </div>
+  <script>
+    const apiList = {
+      posts: [
+        {
+          title: '字段',
+          url: 'id: number, title: string, body: string, userId: number'
+        },
+        {
+          title: '新增 post',
+          method: 'POST',
+          url: '/posts'
+        },
+        {
+          title: '删除 post',
+          method: 'DELETE',
+          url: '/posts/:id'
+        },
+        {
+          title: '全部替换 post',
+          method: 'put',
+          url: '/posts/:id'
+        },
+        {
+          title: '局部更新 post',
+          method: 'patch',
+          url: '/posts/:id'
+        },
+        {
+          title: '获取 post 列表',
+          method: 'get',
+          url: '/posts'
+        },
+        {
+          title: '获取 post 列表和 comments 列表',
+          method: 'GET',
+          url: '/posts?_embed=comments'
+        },
+        {
+          title: '获取 post Range 分页列表',
+          method: 'get',
+          url: '/posts?_start=10&_end=20'
+        },
+        {
+          title: '获取 post Paginate 分页列表',
+          method: 'get',
+          url: '/posts?_page=2&_limit=20'
+        },
+        {
+          title: '获取 post 详情',
+          method: 'GET',
+          url: '/posts/1'
+        },
+        {
+          title: '获取 post 详情的 comments 列表',
+          method: 'GET',
+          url: '/posts/1/comments'
+        },
+        {
+          title: '获取 post 详情和 comments 列表',
+          method: 'GET',
+          url: '/posts/1?_embed=comments'
+        },
+        {
+          title: '获取 user 的 post',
+          method: 'GET',
+          url: '/posts?userId=1'
+        },
+      ],
+      comments: [
+        {
+          title: '字段',
+          url: 'id: number, name: string, email: string, body: string, postId: number'
+        },
+        {
+          title: '获取 comments 列表',
+          method: 'GET',
+          url: '/comments'
+        },
+      ],
+      users: [
+        {
+          title: '字段',
+          url: 'id: number, title: string, body: string, userId: number'
+        },
+        {
+          title: '获取 user 列表',
+          method: 'get',
+          url: '/users'
+        },
+      ],
+      todos: [
+        {
+          title: '字段',
+          url: 'id: number, title: string, completed: boolean, userId: number'
+        },
+        {
+          title: '获取 todos 列表',
+          method: 'GET',
+          url: '/todos'
+        },
+      ],
+      albums: [
+        {
+          title: '字段',
+          url: 'id: number, title: string, userId: number'
+        },
+        {
+          title: '获取 album 列表',
+          method: 'GET',
+          url: '/albums'
+        },
+      ],
+      photos: [
+        {
+          title: '字段',
+          url: 'id: number, title: string, url: string, thumbnailUrl: string, postId: albumId'
+        },
+        {
+          title: '获取 photos 列表',
+          method: 'GET',
+          url: '/photos'
+        },
+      ],
+
+    }
+    const renderList = (activeApi) => {
+      const arr = apiList[activeApi] || []
+      const list = document.getElementById('list');
+      const colorMap = {
+        GET: 'bg-green-500',
+        POST: 'bg-orange-500',
+        DELETE: 'bg-red-500',
+        PUT: 'bg-blue-500',
+        PATCH: 'bg-pink-500',
+      }
+      list.innerHTML = arr.map(item => {
+        const method = item.method ? item.method.toUpperCase() : ''
+        return `
+      <li class="border px-4 py-2">
+        <div class="flex gap-x-2 items-center">
+          <span class="text-slate-900 font-bold">${item.title}</span>
+          ${method && `<span class="px-2 py-0.5 rounded-md flex items-center text-white ${colorMap[method]}">${method}</span>`}
+          ${method && method == 'GET' ? `<a target="_blank" href=${item.url} class="text-blue-500">${item.url}</a>` : `<span>${item.url}</span>`}
+        </div>
+      </li>`
+      }).join(' ')
+    }
+    const firstLi = document.querySelector('#api li:first-of-type');
+    firstLi.classList.add('active')
+    renderList(firstLi.dataset.api)
+    const api = document.getElementById('api')
+    api.addEventListener('click', e => {
+      const currentActiveLi = document.querySelector('#api li.active')
+      if (currentActiveLi == e.target || e.target == e.currentTarget) {
+        return
+      }
+      currentActiveLi.classList.remove('active')
+      e.target.classList.add('active');
+      renderList(e.target.dataset.api)
+    })
+
+  </script>
+
+</body>
+
+</html>

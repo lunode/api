@@ -131,7 +131,7 @@ main().then(async ({ JSONFilePreset }) => {
   // /users/1/posts
   router.get("/users/:id/:model", (req, res) => {
     const { id, model } = req.params;
-    if (!["ablums", "todos", "posts"].includes(model)) {
+    if (!["albums", "todos", "posts"].includes(model)) {
       return res.status(405).send("Not Implemented");
     }
     const item = db.data["users"].find((item) => item.id == id);

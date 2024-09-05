@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const fs = require("fs");
 async function main() {
   const { JSONFilePreset } = await import("lowdb/node");
   return { JSONFilePreset };
@@ -7,7 +8,9 @@ async function main() {
 const validateModel = (req, res, next) => {
   console.log(req.params.model);
   if (
-    !["users", "posts", "todos", "albums", "photos"].includes(req.params.model)
+    !["users", "posts", "todos", "albums", "photos", "comments"].includes(
+      req.params.model
+    )
   ) {
     return res.status(405).send("Not Found");
   }
@@ -137,6 +140,13 @@ main().then(async ({ JSONFilePreset }) => {
     }
     const data = db.data[model].filter((item) => item.userId == id);
     res.send(data);
+  });
+  router.get("/", (req, res) => {
+    const indexStream = fs.createReadStream("./public/index.html");
+    indexStream.pipe(res);
+    indexStream.on("end", () => {
+      res.end();
+    });
   });
   app.use(morgan("dev"));
   app.use(express.json());

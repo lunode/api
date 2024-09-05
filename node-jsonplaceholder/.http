@@ -1,6 +1,7 @@
 @url=http://localhost:3000
 ### 
 get {{url}}/posts?_embed=comments
+
 ### 新增 post 
 post {{url}}/posts
 Content-Type: application/json
@@ -10,6 +11,7 @@ Content-Type: application/json
     "body": "new post body",
     "userId": 1
 }
+
 ### 删除 post
 delete {{url}}/posts/101
 ### 全部替换 post

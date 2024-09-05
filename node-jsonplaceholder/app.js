@@ -2,10 +2,9 @@ const express = require("express");
 const morgan = require("morgan");
 const fs = require("fs");
 const cors = require("cors");
-async function main() {
-  const { JSONFilePreset } = await import("lowdb/node");
-  return { JSONFilePreset };
-}
+const db = require("./db.json");
+const app = express();
+const router = express.Router();
 const validateModel = (req, res, next) => {
   console.log(req.params.model);
   if (
@@ -28,133 +27,139 @@ const validateQuery = (req, res, next) => {
   req.query.limit = limit;
   next();
 };
-main().then(async ({ JSONFilePreset }) => {
-  const app = express();
-  const router = express.Router();
-  const db = await JSONFilePreset("db.json", []);
-  // 列表
-  router.get("/:model", validateModel, validateQuery, (req, res) => {
-    const { page, limit } = req.query;
-    const start = (page - 1) * limit;
-    const end = limit * page;
-    console.log(start, end);
-    const data = db.data[req.params.model]
-      .toSorted((a, b) => b.id - a.id)
-      .slice(start, end);
-    res.send(data);
+// 列表
+router.get("/:model", validateModel, validateQuery, (req, res) => {
+  const { page, limit } = req.query;
+  const start = (page - 1) * limit;
+  const end = limit * page;
+  console.log(start, end);
+  const data = db[req.params.model]
+    .sort((a, b) => b.id - a.id)
+    .slice(start, end);
+  res.send(data);
+});
+// 详情
+router.get("/:model/:id", validateModel, (req, res) => {
+  console.log(req.params.model);
+  console.log();
+  const data = db[req.params.model].find((item) => item.id == req.params.id);
+  if (!data) {
+    return res.status(404).send("Not Found");
+  }
+  res.send(data);
+});
+// 删除
+router.delete("/:model/:id", validateModel, (req, res) => {
+  const index = db[req.params.model].findIndex(
+    (item) => item.id == req.params.id
+  );
+  if (index < 0) {
+    return res.status(404).send("数据不存在");
+  }
+  db[req.params.model].splice(index, 1);
+  res.send({ message: "删除成功" });
+});
+// 新增数据（Create）
+router.post("/:model", validateModel, (req, res) => {
+  const newItem = req.body;
+  const maxId = db[req.params.model].reduce((a, b) => (b.id > a ? b.id : a), 0);
+  newItem.id = maxId + 1;
+  db[req.params.model].push(newItem);
+  res.status(201).send(newItem);
+});
+// 更新部分数据
+router.patch("/:model/:id", validateModel, (req, res) => {
+  const index = db[req.params.model].findIndex(
+    (item) => item.id == req.params.id
+  );
+  if (index < 0) {
+    return res.status(404).send({ message: "数据不存在" });
+  }
+  db[req.params.model].splice(index, 1, {
+    ...db[req.params.model][index],
+    ...req.body,
   });
-  // 详情
-  router.get("/:model/:id", validateModel, (req, res) => {
-    console.log(req.params.model);
-    console.log();
-    const data = db.data[req.params.model].find(
-      (item) => item.id == req.params.id
-    );
-    if (!data) {
-      return res.status(404).send("Not Found");
-    }
-    res.send(data);
+  res.send(db[req.params.model][index]);
+});
+// 更新全部数据
+router.put("/:model/:id", validateModel, (req, res) => {
+  const index = db[req.params.model].findIndex(
+    (item) => item.id == req.params.id
+  );
+  if (index < 0) {
+    return res.status(404).send({ message: "数据不存在" });
+  }
+  const data = {
+    ...req.body,
+    id: db[req.params.model][index].id,
+  };
+
+  db[req.params.model].splice(index, 1, data);
+  res.send(data);
+});
+// /posts/1/comments
+// /albums/1/photos
+router.get("/posts/:id/comments", (req, res) => {
+  const { id } = req.params;
+  const item = db["posts"].find((item) => item.id == id);
+  if (!item) {
+    return res.status(404).send(`Not Found`);
+  }
+  const data = db["comments"].filter((item) => item.postId == id);
+  res.send(data);
+});
+router.get("/albums/:id/photos", (req, res) => {
+  const { id } = req.params;
+  const item = db["albums"].find((item) => item.id == id);
+  if (!item) {
+    return res.status(404).send(`Not Found`);
+  }
+  const data = db["photos"].filter((item) => item.albumId == id);
+  res.send(data);
+});
+// /users/1/albums
+// /users/1/todos
+// /users/1/posts
+router.get("/users/:id/:model", (req, res) => {
+  const { id, model } = req.params;
+  if (!["albums", "todos", "posts"].includes(model)) {
+    return res.status(405).send("Not Implemented");
+  }
+  const item = db["users"].find((item) => item.id == id);
+  if (!item) {
+    return res.status(404).send(`Not Found`);
+  }
+  const data = db[model].filter((item) => item.userId == id);
+  res.send(data);
+});
+router.get("/", (req, res) => {
+  const indexStream = fs.createReadStream("./public/index.html");
+  indexStream.pipe(res);
+  indexStream.on("end", () => {
+    res.end();
   });
-  // 删除
-  router.delete("/:model/:id", validateModel, (req, res) => {
-    const index = db.data[req.params.model].findIndex(
-      (item) => item.id == req.params.id
-    );
-    if (index < 0) {
-      return res.status(404).send("数据不存在");
-    }
-    db.data[req.params.model].splice(index, 1);
-    db.write();
-    res.send({ message: "删除成功" });
-  });
-  // 新增数据（Create）
-  router.post("/:model", validateModel, (req, res) => {
-    const newItem = req.body;
-    const maxId = db.data[req.params.model].reduce(
-      (a, b) => (b.id > a ? b.id : a),
-      0
-    );
-    newItem.id = maxId + 1;
-    db.data[req.params.model].push(newItem);
-    db.write();
-    res.status(201).send(newItem);
-  });
-  // 更新部分数据
-  router.patch("/:model/:id", validateModel, (req, res) => {
-    const index = db.data[req.params.model].findIndex(
-      (item) => item.id == req.params.id
-    );
-    if (index < 0) {
-      return res.status(404).send({ message: "数据不存在" });
-    }
-    db.data[req.params.model].splice(index, 1, {
-      ...db.data[req.params.model][index],
-      ...req.body,
-    });
-    db.write();
-    res.send(db.data[req.params.model][index]);
-  });
-  // 更新全部数据
-  router.put("/:model/:id", validateModel, (req, res) => {
-    const index = db.data[req.params.model].findIndex(
-      (item) => item.id == req.params.id
-    );
-    if (index < 0) {
-      return res.status(404).send({ message: "数据不存在" });
-    }
-    db.data[req.params.model].splice(index, 1, {
-      ...req.body,
-      id: db.data[req.params.model][index].id,
-    });
-    res.send(data);
-  });
-  // /posts/1/comments
-  // /albums/1/photos
-  router.get("/posts/:id/comments", (req, res) => {
-    const { id } = req.params;
-    const item = db.data["posts"].find((item) => item.id == id);
-    if (!item) {
-      return res.status(404).send(`Not Found`);
-    }
-    const data = db.data["comments"].filter((item) => item.postId == id);
-    res.send(data);
-  });
-  router.get("/albums/:id/photos", (req, res) => {
-    const { id } = req.params;
-    const item = db.data["albums"].find((item) => item.id == id);
-    if (!item) {
-      return res.status(404).send(`Not Found`);
-    }
-    const data = db.data["photos"].filter((item) => item.albumId == id);
-    res.send(data);
-  });
-  // /users/1/albums
-  // /users/1/todos
-  // /users/1/posts
-  router.get("/users/:id/:model", (req, res) => {
-    const { id, model } = req.params;
-    if (!["albums", "todos", "posts"].includes(model)) {
-      return res.status(405).send("Not Implemented");
-    }
-    const item = db.data["users"].find((item) => item.id == id);
-    if (!item) {
-      return res.status(404).send(`Not Found`);
-    }
-    const data = db.data[model].filter((item) => item.userId == id);
-    res.send(data);
-  });
-  router.get("/", (req, res) => {
-    const indexStream = fs.createReadStream("./public/index.html");
-    indexStream.pipe(res);
-    indexStream.on("end", () => {
-      res.end();
-    });
-  });
-  app.use(cors());
-  app.use(morgan("dev"));
-  app.use(express.json());
-  app.use(router);
-  app.listen(3000, () => {
-    console.log("app listen 3000");
-  });
+});
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(router);
+app.listen(3000, () => {
+  console.log("app listen 3000");
+});
+const saveData = () => {
+  fs.writeFileSync(`db.json`, JSON.stringify(db));
+};
+process.on("SIGINT", (msg) => {
+  console.log("SIGINT", msg);
+  saveData();
+});
+process.on("beforeExit", (msg) => {
+  console.log("beforeExit", msg);
+  saveData();
+});
+process.on("uncaughtException", (msg) => {
+  console.log("uncaughtException", msg);
+});
+process.on("unhandledRejection", (msg) => {
+  console.log("unhandledRejection", msg);
 });

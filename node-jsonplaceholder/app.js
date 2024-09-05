@@ -70,10 +70,11 @@ main().then(async ({ JSONFilePreset }) => {
   // 新增数据（Create）
   router.post("/:model", validateModel, (req, res) => {
     const newItem = req.body;
-    const maxIdItem = db.data[req.params.model]
-      .sort((a, b) => b.id - a.id)
-      .shift();
-    newItem.id = maxIdItem ? maxIdItem.id + 1 : 1;
+    const maxId = db.data[req.params.model].reduce(
+      (a, b) => (b.id > a ? b.id : a),
+      0
+    );
+    newItem.id = maxId + 1;
     db.data[req.params.model].push(newItem);
     db.write();
     res.status(201).send(newItem);

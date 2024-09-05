@@ -1,46 +1,25 @@
 @url=http://localhost:3000
-### 
-get {{url}}/posts?_embed=comments
-### 新增 post 
-post {{url}}/posts
+
+### 获取 user 列表
+get {{url}}/users
+
+### 新增 user 
+post {{url}}/users
 Content-Type: application/json
 
 {
-    "title": "new post",
-    "body": "new post body",
-    "userId": 1
+    "name": "text"
 }
-### 删除 post
-delete {{url}}/posts/101
-### 全部替换 post
-put {{url}}/posts/101
+### 更新 user 
+patch {{url}}/users/10
 Content-Type: application/json
 
 {
-    "id": 101,
-    "title": "new post put",
-    "body": "new post body put"
+    "name": "test"
 }
-### 局部更新 post
-patch {{url}}/posts/101
-Content-Type: application/json
 
-{
-    "id": 101,
-    "title": "new post patch"
-}
-### 获取 post 列表
-get {{url}}/posts
-### 获取 psot Range 分页列表
-get {{url}}/posts?_start=10&_end=40
-### 获取 psot Paginate 分页列表
-get {{url}}/posts?_page=1&_limit=20
-### 获取 post 详情
-get {{url}}/posts/101
-### 获取 post 的评论
-get {{url}}/post/1/comments
-### 获取用户的 post
-get {{url}}/posts?userId=1
 
+### 删除 user
+delete {{url}}/users/10
 
 

@@ -1,0 +1,14 @@
+{
+  "watch": [
+    "**/*.js",
+    "**/*.json"
+  ],
+  "ignore": [
+    "node_modules",
+    "package*.json",
+    "nodemon.json"
+  ],
+  "exec": "node app.js",
+  "ext": ".js",
+  "exitcrash": false
+}

@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev": "nodemon --config nodemon.json --delay=2"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "lowdb": "^7.0.1",
+    "morgan": "^1.10.0"
+  }
+}

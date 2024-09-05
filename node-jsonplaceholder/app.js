@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const fs = require("fs");
+const cors = require("cors");
 async function main() {
   const { JSONFilePreset } = await import("lowdb/node");
   return { JSONFilePreset };
@@ -148,6 +149,7 @@ main().then(async ({ JSONFilePreset }) => {
       res.end();
     });
   });
+  app.use(cors());
   app.use(morgan("dev"));
   app.use(express.json());
   app.use(router);

@@ -149,13 +149,14 @@ app.listen(3000, () => {
 const saveData = () => {
   fs.writeFileSync(`db.json`, JSON.stringify(db));
 };
-process.on("SIGINT", (msg) => {
-  console.log("SIGINT", msg);
-  saveData();
-});
 process.on("beforeExit", (msg) => {
   console.log("beforeExit", msg);
   saveData();
+});
+process.on("SIGTERM", (msg) => {
+  console.log("SIGTERM", msg);
+  saveData();
+  process.exit(0); // 确保保存数据后正确退出
 });
 process.on("uncaughtException", (msg) => {
   console.log("uncaughtException", msg);

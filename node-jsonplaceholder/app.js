@@ -2,6 +2,8 @@ const express = require("express");
 const morgan = require("morgan");
 const fs = require("fs");
 const cors = require("cors");
+const simpleSvgPlaceholder = require("./svg.js");
+
 const db = require("./db.json");
 const app = express();
 const router = express.Router();
@@ -138,6 +140,22 @@ router.get("/", (req, res) => {
   indexStream.on("end", () => {
     res.end();
   });
+});
+router.get("/public/img/:width/:color", (req, res) => {
+  const width = parseInt(req.params.width);
+  const color = req.params.color;
+  const height = width;
+  console.log(width, color);
+  const img = simpleSvgPlaceholder({
+    width: width,
+    height: height,
+    text: `${width} x ${height}`,
+    bgColor: `#${color}` || "#92c952",
+    textColor: "#9C9C9C",
+  });
+  res.set("Cache-Control", "public, max-age=86400"); // 缓存 24 小时
+  res.set("Content-Type", "image/svg+xml");
+  res.send(img);
 });
 app.use(cors());
 app.use(morgan("dev"));

@@ -12,3 +12,4 @@ services:
     environment:
       NODE_ENV: development
     network_mode: "host"
+    stop_grace_period: 2s

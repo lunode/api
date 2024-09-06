@@ -158,6 +158,7 @@ router.get("/public/img/:width/:color", (req, res) => {
   res.send(img);
 });
 app.use(cors());
+app.options("*", cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(router);

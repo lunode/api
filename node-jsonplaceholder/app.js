@@ -141,10 +141,10 @@ router.get("/", (req, res) => {
     res.end();
   });
 });
-router.get("/public/img/:width/:color", (req, res) => {
+const placeholderImg = (req, res) => {
   const width = parseInt(req.params.width);
   const color = req.params.color;
-  const height = width;
+  const height = parseInt(req.params.height) || width;
   console.log(width, color);
   const img = simpleSvgPlaceholder({
     width: width,
@@ -156,7 +156,9 @@ router.get("/public/img/:width/:color", (req, res) => {
   res.set("Cache-Control", "public, max-age=86400"); // 缓存 24 小时
   res.set("Content-Type", "image/svg+xml");
   res.send(img);
-});
+};
+router.get("/public/img/:width/:color", placeholderImg);
+router.get("/public/img/:width/:height/:color", placeholderImg);
 app.use(cors());
 app.options("*", cors());
 app.use(morgan("dev"));
